@@ -1,56 +1,88 @@
 import _ from 'lodash';
 
-import Canvas from '../core/canvas';
-import Events from '../core/events';
-import AssetsStore, { Image } from '../core/assets-store';
+import Frame from '../menu/frame';
+import AssetsStore from '../core/assets-store';
 
 import { EventEmitter } from '../../libs/events';
+import { Point } from '../../libs/misc';
 
-const GRID_SIZE = 80;
-const GRID_GAP = 5;
+const GRID_SIZE = 72;
+const PIXEL_FACTOR = 9;
+
+export type Id = number;
+export type State = { id: Id; type: string; position: Point }[];
+
+// TODO make flexy with plugins
+const prioirty = [
+    'flag',
+    'vas3k',
+    'bug',
+    'wall',
+];
+
+const byPriority = (a, b) => {
+    const aindex = prioirty.findIndex(($) => $ === a.type);
+    const bindex = prioirty.findIndex(($) => $ === b.type);
+
+    return aindex < bindex ? -1 : 1;
+};
 
 export default class World {
-    private state = [];
+    public state = [] as State;
 
     // public draw = {} as { [k: string]: 'text' | Image };
     public onChange = new EventEmitter<void>();
 
-    constructor (private canvas: Canvas, private events: Events, private assets: AssetsStore) {
-        this.canvas.onRender.subscribe((context: CanvasRenderingContext2D) => {
+    constructor (private frame: Frame, private assets: AssetsStore) {
+        this.frame.onRenderGame.subscribe((context: CanvasRenderingContext2D) => {
             context.imageSmoothingEnabled = false;
 
-            this.state.forEach((entry) => {
+            this.state.sort(byPriority).forEach((entry) => {
                 const img = this.assets.get(entry.type);
+                const pos = { x: entry.position.x * (GRID_SIZE), y: entry.position.y * (GRID_SIZE) };
 
                 if (img) {
-                    context.drawImage(img, entry.position.x * (GRID_SIZE + GRID_GAP), entry.position.y * (GRID_SIZE + GRID_GAP), img.width * 10, img.height * 10);
-                } else {
-                    const str = entry.type.startsWith('t/') ? entry.type.substr(2) : entry.type;
+                    const size = { x: img.width * PIXEL_FACTOR, y: img.height * PIXEL_FACTOR };
 
-                    context.font = '40px VT323';
+                    context.drawImage(img, pos.x + GRID_SIZE / 2 - size.x / 2, pos.y + GRID_SIZE - size.y, size.x, size.y);
+                } else {
+                    let str = entry.type.startsWith('t/') ? entry.type.slice(2) : entry.type;
+                    // str = str.length > 5 ? str.slice(0, 3).split('').concat(['\n']).concat(str.slice(3).split('')).join('') : str;
+
+                    context.font = '35px VT323';
                     context.textAlign = 'center';
 
                     context.fillStyle = '#ccc';
                     context.beginPath();
-                    context.fillText(str, entry.position.x * (GRID_SIZE + GRID_GAP) + GRID_SIZE / 2, entry.position.y * (GRID_SIZE + GRID_GAP) + GRID_SIZE / 2 - 15);
+                    context.fillText(str, entry.position.x * (GRID_SIZE) + GRID_SIZE / 2, entry.position.y * (GRID_SIZE) + GRID_SIZE / 2 + 10);
+                    context.closePath();
 
                     context.fillStyle = '#00000030';
                     context.beginPath();
-                    context.rect(entry.position.x * (GRID_SIZE + GRID_GAP) + GRID_SIZE * .2, entry.position.y * (GRID_SIZE + GRID_GAP) + GRID_SIZE * .8, GRID_SIZE * .6, 8);
+                    context.rect(entry.position.x * (GRID_SIZE) + GRID_SIZE * .2, entry.position.y * (GRID_SIZE) + GRID_SIZE * .9, GRID_SIZE * .6, 8);
                     context.fill();
+                    context.closePath();
                 }
             });
         });
 
         this.onResolve.subscribe((request: string) => {
             return request === 'word' 
-                ? this.get().filter(($) => $.type.startsWith('t/'))
-                : this.get().filter(($) => $.type === request);
+                ? this.all().filter(($) => $.type.startsWith('t/'))
+                : this.all().filter(($) => $.type === request);
         });
     }
 
-    public get = () => {
+    public all = () => {
         return this.state;
+    };
+
+    public ids = () => {
+        return this.all().map(($) => $.id);
+    };
+
+    public set = (id: Id, entity: any) => {
+        this.state = this.state.map(($) => $.id === id ? entity : $);
     };
 
     public one = (id) => {
@@ -58,11 +90,10 @@ export default class World {
     };
 
     public remove = (id) => {
-        return this.update((s) => s.filter(($) => $.id !== id));
+        this.state = this.state.filter(($) => $.id !== id);
     };
 
-    public update = (predicate) => {
-        this.state = predicate(this.state);
+    public commit = () => {
         this.onChange.emitParallelSync();
     };
 
@@ -72,13 +103,3 @@ export default class World {
         return _.flatten(this.onResolve.emitParallelSync(request).filter(Boolean)).map(($) => $.id);
     };
 };
-
-// Grid just in case
-//     // for (let x = 0; x < 10; ++x) {
-//     //     for (let y = 0; y < 10; ++y) {
-//     //         context.fillStyle = '#eeeeee';
-//     //         context.beginPath();
-//     //         context.rect(x * (GRID_SIZE + GRID_GAP), y * (GRID_SIZE + GRID_GAP), GRID_SIZE, GRID_SIZE);
-//     //         context.fill();
-//     //     }
-//     // }
