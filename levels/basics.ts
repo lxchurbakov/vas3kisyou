@@ -20,7 +20,10 @@ const mapping = {
 };
 
 const process = (s: string) => {
-    return s.split('').reduce((acc, c) => {
+    return (`
+    
+    
+    ` + s).split('').reduce((acc, c) => {
         if (c === '\n') {
             acc.push([]);
         }
@@ -33,14 +36,24 @@ const process = (s: string) => {
 
 
 export default [
+    // First basic level to let people understand what to do
+    process(`
+          w ww
+         w w  ww
+        w3iyw  vww
+       w ginw  w fw
+        ww   w   w
+              ww
+    `),
+
     // A level to make people sense game
-    [
-        ,,,,,
-        [,,,,,'vas3k',,,,'flag'],
-        ,
-        [,,,,,'t/vas3k', 't/is', 't/you'],
-        [,,,,,'t/flag', 't/is', 't/win'],
-    ],
+    // [
+    //     ,,,,,
+    //     [,,,,,'vas3k',,,,'flag'],
+    //     ,
+    //     [,,,,,'t/vas3k', 't/is', 't/you'],
+    //     [,,,,,'t/flag', 't/is', 't/win'],
+    // ],
     // A level to make people move walls
     [
         ,,,,,
