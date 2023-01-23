@@ -5,6 +5,8 @@ import Frame from '../core/frame';
 import Rules from './rules';
 import World, { Id, State } from './world';
 
+import Animations from '../core/animations';
+
 import { Point, same, add } from '../../libs/misc';
 import { EventEmitter } from '../../libs/events';
 
@@ -29,7 +31,13 @@ export default class Movement {
     public collisionStrategies = [] as { who: Id, whom: Id, how: CollisionStrategy }[];
     public controlledEntitiesIds = [] as Id[];   
 
-    constructor (private events: Events, private frame: Frame, private world: World, private rules: Rules) {
+    constructor (
+        private events: Events, 
+        private frame: Frame, 
+        private world: World, 
+        private rules: Rules,
+        private animations: Animations,
+    ) {
         this.rules.onChange.subscribe((rules) => {
             this.collisionStrategies = [];
             this.controlledEntitiesIds = [];
@@ -56,11 +64,25 @@ export default class Movement {
 
             if (delta.x !== 0 || delta.y !== 0) {
                 this.controlledEntitiesIds.forEach((id) => {
-                    this.move(id, delta);
+                    const entity = this.world.one(id);
+                    const position = { ...entity.position };
+                    
+                    if (this.move(id, delta)) {
+                        this.animations.create({
+                            x: position.x + (Math.random() * .2) - .1,
+                            y: position.y + (Math.random() * .2) - .1,
+                        }, 'walk', 500);
+    
+                        if (Math.random() > .5) {
+                            this.animations.create({
+                                x: position.x + (Math.random() * .4) - .2,
+                                y: position.y + (Math.random() * .4) - .2,
+                            }, 'walk', 200);
+                        }
+                    }
                 });
 
                 this.world.commit();
-    
                 this.onAfterYouMove.emitParallelSync();
             }
         });

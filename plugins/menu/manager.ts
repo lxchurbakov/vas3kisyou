@@ -3,6 +3,8 @@ import Events from '../core/events';
 
 import Frame from '../core/frame';
 
+import Background from '../mechanics/background';
+
 import World from '../mechanics/world';
 import Movement from '../mechanics/movement';
 import Completion from '../mechanics/completion';
@@ -25,12 +27,15 @@ export default class Manager {
         this.world.commit();
 
         localStorage.setItem('last-level', index.toString())
+
+        this.background.update();
     };
 
     constructor (
         private canvas: Canvas, 
         private events: Events, 
         private frame: Frame, 
+        private background: Background,
         private world: World, 
         private movement: Movement, 
         private completion: Completion

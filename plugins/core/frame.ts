@@ -11,6 +11,7 @@ import wall from 'url:../../assets/wall.png';
 import water from 'url:../../assets/water.png';
 import bug from 'url:../../assets/bug.png';
 import dollar from 'url:../../assets/dollar.png';
+import tree from 'url:../../assets/tree.png';
 
 export default class Frame {
     public mode = 'loading';
@@ -36,9 +37,10 @@ export default class Frame {
             this.assets.add('flag', flag),
             this.assets.add('vas3k', vas3k),
             this.assets.add('wall', wall),
-            this.assets.add('wota', water),
+            this.assets.add('water', water),
             this.assets.add('bug', bug),
             this.assets.add('dollar', dollar),
+            this.assets.add('tree', tree),
             new Promise((resolve) => setTimeout(resolve, 1000)),
         ]).then(() => {
             this.mode = 'game';

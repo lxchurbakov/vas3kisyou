@@ -1,6 +1,7 @@
 import World from './world';
 import Rules from './rules';
 import Movement from './movement';
+import Animations from '../core/animations';
 
 import { distance, add } from '../../libs/misc';
 
@@ -11,6 +12,7 @@ export default class Enemy {
         private world: World,
         private rules: Rules,
         private movement: Movement,
+        private animations: Animations,
     ) {
         this.rules.onChange.subscribe((rules) => {
             this.enemies = [];
@@ -42,10 +44,24 @@ export default class Enemy {
                             step = { x: 0, y: (factor * (nearest.position.y - entity.position.y) / Math.abs(entity.position.y - nearest.position.y)) || 0 };
                         }
 
-                        // if (!Number.isNa)
+                        // const entity = this.world.one(id);
+                        const position = { ...entity.position };
+                        
+                        if (this.movement.move(id, step)) {
+                            this.animations.create({
+                                x: position.x + (Math.random() * .2) - .1,
+                                y: position.y + (Math.random() * .2) - .1,
+                            }, 'walk', 500);
+        
+                            if (Math.random() > .5) {
+                                this.animations.create({
+                                    x: position.x + (Math.random() * .4) - .2,
+                                    y: position.y + (Math.random() * .4) - .2,
+                                }, 'walk', 200);
+                            }
 
-                        this.movement.move(id, step);
-                        this.world.commit();
+                            this.world.commit();
+                        }
                     }
                 });
             });
