@@ -1,6 +1,6 @@
 import Events from '../core/events';
 
-import Frame from '../menu/frame';
+import Frame from '../core/frame';
 
 import Rules from './rules';
 import World, { Id, State } from './world';
@@ -50,7 +50,7 @@ export default class Movement {
         });
 
         this.events.onKeyDown.subscribe((code) => {
-            if (this.frame.visible) { return };
+            if (this.frame.overlay) { return };
 
             const delta = getDelta(code);
 

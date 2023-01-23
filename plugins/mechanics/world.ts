@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-import Frame from '../menu/frame';
+import Frame from '../core/frame';
 import AssetsStore from '../core/assets-store';
 
 import { EventEmitter } from '../../libs/events';
@@ -84,6 +84,10 @@ export default class World {
     public set = (id: Id, entity: any) => {
         this.state = this.state.map(($) => $.id === id ? entity : $);
     };
+
+    public patch = (id: Id, data: any) => {
+        this.state = this.state.map(($) => $.id === id ? { ...$, ...data }: $);
+    };  
 
     public one = (id) => {
         return this.state.find(($) => $.id === id);
