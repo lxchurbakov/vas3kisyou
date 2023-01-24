@@ -14,3 +14,10 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           folder: dist 
+      - name: Upload vas3k is you to itch.io project
+        uses: robpc/itchio-upload-action@v1
+        with:
+          path: dist
+          project: l-x-c-h/vas3k-is-you
+          channel: web
+          api-key: ${{ secrets.ITCHIO_API_KEY }}
